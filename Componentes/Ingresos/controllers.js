@@ -12,8 +12,13 @@ router.post('/cargar-excel', upload.single('archivoExcel'), async (req, res) => 
 
     // Llama a tu servicio para procesar el archivo Excel
     const data = await excelService.procesarArchivoExcel(filePath);
-    console.log(data);
-    res.json(data);
+
+    const response = {
+      message: 'Archivo Excel procesado con éxito',
+      data: data
+    };
+
+    res.json(response);
   } catch (error) {
       fs.unlink(filePath, (err) => {
         if (err) {
