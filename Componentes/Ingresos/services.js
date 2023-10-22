@@ -1,15 +1,17 @@
 const XLSX = require('xlsx');
 const fs = require('fs');
+const { pool } = require('../../index'); 
+
 async function procesarArchivoExcel(filePath) {
   const workbook = XLSX.readFile(filePath);
   const sheetName = workbook.SheetNames[0];
   const sheet = workbook.Sheets[sheetName];
 
   // Puedes acceder a las celdas específicas o a rangos de celdas aquí
-  const Inscripciones_total_mes = sheet['C18'].v; 
+  const inscripciones_total_mes = sheet['C18'].v; 
   const titulos_total_mes = sheet['C19'].v;
-  const Subvenciones_total_mes = sheet['C20'].v;
-  const Otros_total_mes = sheet['C21'].v;
+  const subvenciones_total_mes = sheet['C20'].v;
+  const ventaProductos_total_mes = sheet['C21'].v;
   const auxiliares_total_mes = sheet['C22'].v;
 
   const Dias = {
@@ -44,16 +46,94 @@ async function procesarArchivoExcel(filePath) {
   
   return {
     DatosMensuales:{
-    Inscripciones_total_mes,
+    inscripciones_total_mes,
     titulos_total_mes,
-    Subvenciones_total_mes,
-    Otros_total_mes,
+    subvenciones_total_mes,
+    ventaProductos_total_mes,
     auxiliares_total_mes
     },
     Diario:{datosDelRangoDias,datosDelRangoTotalDia}
   };
 }
 
+async function insertarDatos({ reporteDiario, reporteMensual, fechaReporte }) {
+  const client = await pool.connect();
+
+  try {
+      await client.query('BEGIN');
+
+      // 1. Insertar en la tabla 'ingreso'
+      const insertIngresoQuery = `
+          INSERT INTO ingreso (fecha, data)
+          VALUES ($1, $2)
+          RETURNING id;
+      `;
+      const ingresoValues = [fechaReporte, JSON.stringify(reporteMensual)];
+      const result = await client.query(insertIngresoQuery, ingresoValues);
+      const ingresoId = result.rows[0].id;
+
+      // 2. Insertar en la tabla 'sub_ingreso'
+      for (let i = 0; i < reporteDiario.fechas.length; i++) {
+          const insertSubIngresoQuery = `
+              INSERT INTO sub_ingreso (ingreso_id, fecha, total)
+              VALUES ($1, $2, $3);
+          `;
+          const subIngresoValues = [ingresoId, reporteDiario.fechas[i][0], reporteDiario.totales[i][0]];
+          await client.query(insertSubIngresoQuery, subIngresoValues);
+      }
+      
+      console.log("Datos insertados con éxito.");
+
+      await client.query('COMMIT');
+  } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+  } finally {
+      client.release();
+  }
+}
+
+async function obtenerReportePorRangoFechas(fechaInicio, fechaFin) {
+  const client = await pool.connect();
+
+  try {
+      const query = `
+          SELECT * FROM ingreso 
+          WHERE fecha BETWEEN $1 AND $2
+          ORDER BY fecha ASC;  -- Esto ordenará los reportes por fecha en orden ascendente
+      `;
+      const result = await client.query(query, [fechaInicio, fechaFin]);
+      
+      return result.rows;
+  } catch (error) {
+      throw error;
+  } finally {
+      client.release();
+  }
+}
+
+async function obtenerReporteDiarioPorRangoFechas(fechaInicio, fechaFin) {
+  const client = await pool.connect();
+
+  try {
+      const query = `
+          SELECT * FROM sub_ingreso 
+          WHERE fecha BETWEEN $1 AND $2
+          ORDER BY fecha ASC;  -- Esto ordenará los reportes diarios por fecha en orden ascendente
+      `;
+      const result = await client.query(query, [fechaInicio, fechaFin]);
+      
+      return result.rows;
+  } catch (error) {
+      throw error;
+  } finally {
+      client.release();
+  }
+}
+
 module.exports = {
   procesarArchivoExcel,
+  insertarDatos,
+  obtenerReportePorRangoFechas,
+  obtenerReporteDiarioPorRangoFechas
 };
