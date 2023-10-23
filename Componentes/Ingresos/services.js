@@ -13,6 +13,7 @@ async function procesarArchivoExcel(filePath) {
   const subvenciones_total_mes = sheet['C20'].v;
   const ventaProductos_total_mes = sheet['C21'].v;
   const auxiliares_total_mes = sheet['C22'].v;
+  const total_mes = sheet['C23'].v;
 
   const Dias = {
     s: { c: 1, r: 27 }, // Inicio en B28 (B es la segunda columna, por lo que c=1)
@@ -50,7 +51,8 @@ async function procesarArchivoExcel(filePath) {
     titulos_total_mes,
     subvenciones_total_mes,
     ventaProductos_total_mes,
-    auxiliares_total_mes
+    auxiliares_total_mes,
+    total_mes
     },
     Diario:{datosDelRangoDias,datosDelRangoTotalDia}
   };
@@ -112,6 +114,49 @@ async function obtenerReportePorRangoFechas(fechaInicio, fechaFin) {
   }
 }
 
+async function obtenerReportePorId(id) {	
+  const client = await pool.connect();
+
+  try {
+      const query = `
+          SELECT * FROM ingreso 
+          WHERE id = $1
+      `;
+      const result = await client.query(query, [id]);
+      
+      return result.rows;
+  } catch (error) {
+      throw error;
+  } finally {
+      client.release();
+  }
+}
+
+async function eliminarReportePorId(id) {	
+  const client = await pool.connect();
+
+  try {
+      const query = `
+          DELETE FROM ingreso 
+          WHERE id = $1
+          RETURNING *; 
+      `;
+      const result = await client.query(query, [id]);
+
+      if (result.rows.length === 0) { 
+          throw new Error(`No se encontró el ingreso con el ID ${id} para eliminar.`);
+      }
+      
+      return result.rows[0]; // Retorna el registro eliminado.
+
+  } catch (error) {
+      console.error("Error al eliminar el reporte por ID:", error);
+      throw error;
+  } finally {
+      client.release();
+  }
+}
+
 async function obtenerReporteDiarioPorRangoFechas(fechaInicio, fechaFin) {
   const client = await pool.connect();
 
@@ -131,9 +176,76 @@ async function obtenerReporteDiarioPorRangoFechas(fechaInicio, fechaFin) {
   }
 }
 
+async function obtenerReporteDiarioPorId(id) {	
+  const client = await pool.connect();
+
+  try {
+      const query = `
+          SELECT * FROM sub_ingreso 
+          WHERE id = $1
+      `;
+      const result = await client.query(query, [id]);
+      
+      return result.rows;
+  } catch (error) {
+      throw error;
+  } finally {
+      client.release();
+  }
+}
+
+async function validarFecha(fecha) {
+  const client = await pool.connect();
+
+  try {
+      const query = `
+          SELECT EXISTS (
+              SELECT 1 
+              FROM ingreso 
+              WHERE EXTRACT(YEAR FROM fecha) = $1 AND EXTRACT(MONTH FROM fecha) = $2
+          ) AS fecha_existe;
+      `;
+
+      const valores = [new Date(fecha).getFullYear(), new Date(fecha).getMonth() + 1]; // +1 porque getMonth() devuelve un índice 0-based.
+
+      const result = await client.query(query, valores);
+
+      return result.rows[0].fecha_existe;
+
+  } catch (error) {
+      throw error;
+  } finally {
+      client.release();
+  }
+}
+
+async function getSumaTotalMesIngresos() {	
+  const client = await pool.connect();
+
+  try {
+      const query = `
+          SELECT SUM((data->>'total_mes')::integer) AS suma_total_mes 
+          FROM ingreso
+      `;
+      const result = await client.query(query);
+      
+      // Retorna la suma
+      return result.rows[0].suma_total_mes;
+  } catch (error) {
+      throw error;
+  } finally {
+      client.release();
+  }
+}
+
 module.exports = {
   procesarArchivoExcel,
   insertarDatos,
   obtenerReportePorRangoFechas,
-  obtenerReporteDiarioPorRangoFechas
+  obtenerReporteDiarioPorRangoFechas,
+  obtenerReportePorId,
+  obtenerReporteDiarioPorId,
+  eliminarReportePorId,
+  validarFecha,
+  getSumaTotalMesIngresos
 };
