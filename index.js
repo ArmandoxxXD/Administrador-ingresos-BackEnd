@@ -31,6 +31,10 @@ app.get('/', (req, res) => {
 const ingresosController = require('./Componentes/Ingresos/controllers.js');
 app.use('/ingresos', ingresosController);
 
+// Importa el router desde controller.js de Ingresos
+const gastosController = require('./Componentes/Gastos/controllers.js');
+app.use('/gastos', gastosController);
+
 
 // Iniciar el servidor
 app.listen(port, () => {

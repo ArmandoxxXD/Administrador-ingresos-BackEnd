@@ -3,7 +3,7 @@ const multer = require('multer');
 const upload = multer({ dest: 'uploads_temporal/' }); // Configura el directorio de almacenamiento de los archivos
 const fs = require('fs');
 const router = express.Router();
-const ingresosService = require('./services.js'); // Asegúrate de importar tu servicio de manejo de archivos Excel
+const gastosService = require('./services.js'); // Asegúrate de importar tu servicio de manejo de archivos Excel
 
 
 const HTTP_OK = 200;
@@ -16,7 +16,7 @@ router.post('/cargar-excel', upload.single('archivoExcel'), async (req, res) => 
     var filePath = req.file.path; // Ruta del archivo Excel subido
 
     // Llama a tu servicio para procesar el archivo Excel
-    const data = await ingresosService.procesarArchivoExcel(filePath);
+    const data = await gastosService.procesarArchivoExcel(filePath);
 
     const response = {
       message: 'Archivo Excel procesado con éxito',
@@ -38,7 +38,7 @@ router.post('/cargar-excel', upload.single('archivoExcel'), async (req, res) => 
 router.post('/cargar-registro', async (req, res) => {
   try {
       const { reporteDiario, reporteMensual, fechaReporte  } = req.body;
-      await ingresosService.insertarDatos({ reporteDiario, reporteMensual, fechaReporte  });
+      await gastosService.insertarDatos({ reporteDiario, reporteMensual, fechaReporte  });
 
       res.status(200).json({ message: 'Información almacenada con éxito.' });
   } catch (error) {
@@ -52,7 +52,7 @@ async function obtenerReportePorRangoFechas(req, res) {
     try {
         const fechaInicio = req.params.fechaInicio;
         const fechaFin = req.params.fechaFin;
-        const reportes = await ingresosService.obtenerReportePorRangoFechas(fechaInicio, fechaFin);
+        const reportes = await gastosService.obtenerReportePorRangoFechas(fechaInicio, fechaFin);
 
         if (!reportes || reportes.length === 0) {
             return res.status(404).json({ message: 'No se encontraron reportes para el rango de fechas especificado.' });
@@ -69,7 +69,7 @@ router.get('/reporte-mensual-porId/:id',obtenerReportePorId);
 async function obtenerReportePorId(req, res) {
     try {
         const id = req.params.id;
-        const reportes = await ingresosService.obtenerReportePorId(id);
+        const reportes = await gastosService.obtenerReportePorId(id);
 
         if (!reportes || reportes.length === 0) {
             return res.status(404).json({ message: 'No se encontraron reportes para el rango de fechas especificado.' });
@@ -87,7 +87,7 @@ async function eliminarReportePorId(req, res) {
   const { id } = req.params;
 
   try {
-      const data = await ingresosService.eliminarReportePorId(id);
+      const data = await gastosService.eliminarReportePorId(id);
 
       const response = {
         message: 'Registro de Ingreso Eliminado',
@@ -110,7 +110,7 @@ async function obtenerReporteDiarioPorRangoFechas(req, res) {
     try {
         const fechaInicio = req.params.fechaInicio;
         const fechaFin = req.params.fechaFin;
-        const reportesDiarios = await ingresosService.obtenerReporteDiarioPorRangoFechas(fechaInicio, fechaFin);
+        const reportesDiarios = await gastosService.obtenerReporteDiarioPorRangoFechas(fechaInicio, fechaFin);
 
         if (!reportesDiarios || reportesDiarios.length === 0) {
             return res.status(404).json({ message: 'No se encontraron reportes diarios para el rango de fechas especificado.' });
@@ -127,7 +127,7 @@ router.get('/reporte-diario-porId/:id',obtenerReporteDiarioPorId);
 async function obtenerReporteDiarioPorId(req, res) {
     try {
         const id = req.params.id;
-        const reportes = await ingresosService.obtenerReporteDiarioPorId(id);
+        const reportes = await gastosService.obtenerReporteDiarioPorId(id);
 
         if (!reportes || reportes.length === 0) {
             return res.status(404).json({ message: 'No se encontraron reportes para el rango de fechas especificado.' });
@@ -144,7 +144,7 @@ router.post('/validar-fecha', async (req, res) => {
     try {
         const { fecha } = req.body; 
         
-        const existe = await ingresosService.validarFecha(fecha);
+        const existe = await gastosService.validarFecha(fecha);
         
         if (existe) {
             res.status(200).json({ message: "El ingreso para este mes y año ya existe.",disponible: false });
@@ -162,7 +162,7 @@ router.post('/validar-fecha', async (req, res) => {
 router.get('/suma-total-mes', obtenerSumaTotalMes);
 async function obtenerSumaTotalMes(req, res) {
     try {
-        const suma = await ingresosService.getSumaTotalMesIngresos();
+        const suma = await gastosService.getSumaTotalMesGastos();
 
         const response = {
           message: 'Suma obtenida con éxito',
