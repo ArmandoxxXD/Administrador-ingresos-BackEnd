@@ -25,7 +25,7 @@ CREATE TABLE gasto (
 
 CREATE TABLE sub_gasto (
     id SERIAL PRIMARY KEY,
-    ingreso_id INTEGER REFERENCES gasto(id) ON DELETE CASCADE,
+    gasto_id INTEGER REFERENCES gasto(id) ON DELETE CASCADE,
     fecha DATE NOT NULL,
     total NUMERIC(15,2) NOT NULL
 );
