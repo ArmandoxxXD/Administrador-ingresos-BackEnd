@@ -176,5 +176,25 @@ async function obtenerSumaTotalMes(req, res) {
     }
 }
 
+// Ruta para obtener la suma de todos los total_mes por fecha
+router.get('/suma-total-mes/:fechaInicio/:fechaFin', obtenerSumaTotalMesPorFecha);
+async function obtenerSumaTotalMesPorFecha(req, res) {
+    try {
+        const fechaInicio = req.params.fechaInicio;
+        const fechaFin = req.params.fechaFin;
+        const suma = await gastosService.getSumaTotalMesIngresosPorMes(fechaInicio, fechaFin);
+
+        const response = {
+          message: 'Suma obtenida con éxito',
+          suma_total_mes: suma
+        };
+
+        res.status(200).json(response);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al obtener la suma total de los meses' });
+    }
+}
+
 
 module.exports = router;
