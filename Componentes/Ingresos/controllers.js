@@ -22,14 +22,8 @@ router.post('/cargar-excel', upload.single('archivoExcel'), async (req, res) => 
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: `Error al procesar el archivo Excel. ${error.message}` });
-    } finally {
-      fs.unlink(filePath, (err) => {
-        if (err) {
-          console.error(`Error al eliminar el archivo temporal: ${err}`);
-        }
-      });
     }
-  });
+});
 
 router.post('/cargar-registro', async (req, res) => {
   try {
@@ -178,7 +172,7 @@ async function obtenerSumaTotalMesPorFecha(req, res) {
     try {
         const fechaInicio = req.params.fechaInicio;
         const fechaFin = req.params.fechaFin;
-        const suma = await ingresosService.getSumaTotalMesIngresosPorMes(fechaInicio, fechaFin);
+        const suma = await ingresosService.getSumaTotalMesIngresosPorFecha(fechaInicio, fechaFin);
 
         const response = {
           message: 'Suma obtenida con éxito',
