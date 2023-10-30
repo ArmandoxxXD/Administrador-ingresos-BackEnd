@@ -237,7 +237,7 @@ async function getSumaTotalMesIngresos() {
   }
 }
 
-async function getSumaTotalMesIngresosPorMes(fechaInicio, fechaFin) {	
+async function getSumaTotalMesIngresosPorFecha(fechaInicio, fechaFin) {	
     const client = await pool.connect();
   
     try {
@@ -268,5 +268,5 @@ module.exports = {
   eliminarReportePorId,
   validarFecha,
   getSumaTotalMesIngresos,
-  getSumaTotalMesIngresosPorMes
+  getSumaTotalMesIngresosPorFecha
 };

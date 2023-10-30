@@ -12,28 +12,19 @@ const HTTP_INTERNAL_SERVER_ERROR = 500;
 
 // Endpoint para cargar un archivo Excel
 router.post('/cargar-excel', upload.single('archivoExcel'), async (req, res) => {
-  try {
-    var filePath = req.file.path; // Ruta del archivo Excel subido
-
-    // Llama a tu servicio para procesar el archivo Excel
-    const data = await gastosService.procesarArchivoExcel(filePath);
-
-    const response = {
-      message: 'Archivo Excel procesado con éxito',
-      data: data
-    };
-
-    res.json(response);
-  } catch (error) {
-      fs.unlink(filePath, (err) => {
-        if (err) {
-          console.error(`Error al eliminar el archivo temporal: ${err}`);
-        }
-      });
-    console.error(error);
-    res.status(500).json({ error: 'Error al procesar el archivo Excel.' });
-  }
-});
+    var filePath = req.file.path; 
+    try {
+      const data = await gastosService.procesarArchivoExcel(filePath);
+      const response = {
+        message: 'Archivo Excel procesado con éxito',
+        data: data
+      };
+      res.json(response);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: `Error al procesar el archivo Excel. ${error.message}` });
+    } 
+  });
 
 router.post('/cargar-registro', async (req, res) => {
   try {
@@ -182,7 +173,7 @@ async function obtenerSumaTotalMesPorFecha(req, res) {
     try {
         const fechaInicio = req.params.fechaInicio;
         const fechaFin = req.params.fechaFin;
-        const suma = await gastosService.getSumaTotalMesIngresosPorMes(fechaInicio, fechaFin);
+        const suma = await gastosService.getSumaTotalMesGastosPorFecha(fechaInicio, fechaFin);
 
         const response = {
           message: 'Suma obtenida con éxito',
