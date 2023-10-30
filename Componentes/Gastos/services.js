@@ -101,7 +101,7 @@ async function obtenerReportePorRangoFechas(fechaInicio, fechaFin) {
     try {
         const query = `
           SELECT * FROM gasto 
-          WHERE fecha BETWEEN $1 AND $2
+          WHERE to_char(fecha, 'YYYY-MM') BETWEEN $1 AND $2
           ORDER BY fecha ASC;  -- Esto ordenará los reportes por fecha en orden ascendente
       `;
         const result = await client.query(query, [fechaInicio, fechaFin]);
@@ -238,6 +238,26 @@ async function getSumaTotalMesGastos() {
     }
 }
 
+async function getSumaTotalMesIngresosPorMes(fechaInicio, fechaFin) {	
+    const client = await pool.connect();
+  
+    try {
+        const query = `
+            SELECT SUM((data->>'total_mes')::integer) AS suma_total_mes 
+            FROM ingreso
+            WHERE to_char(fecha, 'YYYY-MM') BETWEEN $1 AND $2
+        `;
+        const result = await client.query(query, [fechaInicio, fechaFin]);
+        
+        // Retorna la suma
+        return result.rows[0].suma_total_mes;
+    } catch (error) {
+        throw error;
+    } finally {
+        client.release();
+    }
+  }
+
 module.exports = {
     procesarArchivoExcel,
     insertarDatos,
@@ -247,5 +267,6 @@ module.exports = {
     obtenerReporteDiarioPorId,
     eliminarReportePorId,
     validarFecha,
-    getSumaTotalMesGastos
+    getSumaTotalMesGastos,
+    getSumaTotalMesIngresosPorMes
 };

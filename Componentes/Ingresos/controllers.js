@@ -10,30 +10,26 @@ const HTTP_OK = 200;
 const HTTP_NOT_FOUND = 404;
 const HTTP_INTERNAL_SERVER_ERROR = 500;
 
-// Endpoint para cargar un archivo Excel
 router.post('/cargar-excel', upload.single('archivoExcel'), async (req, res) => {
-  try {
-    var filePath = req.file.path; // Ruta del archivo Excel subido
-
-    // Llama a tu servicio para procesar el archivo Excel
-    const data = await ingresosService.procesarArchivoExcel(filePath);
-
-    const response = {
-      message: 'Archivo Excel procesado con éxito',
-      data: data
-    };
-
-    res.json(response);
-  } catch (error) {
+    var filePath = req.file.path; 
+    try {
+      const data = await ingresosService.procesarArchivoExcel(filePath);
+      const response = {
+        message: 'Archivo Excel procesado con éxito',
+        data: data
+      };
+      res.json(response);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: `Error al procesar el archivo Excel. ${error.message}` });
+    } finally {
       fs.unlink(filePath, (err) => {
         if (err) {
           console.error(`Error al eliminar el archivo temporal: ${err}`);
         }
       });
-    console.error(error);
-    res.status(500).json({ error: 'Error al procesar el archivo Excel.' });
-  }
-});
+    }
+  });
 
 router.post('/cargar-registro', async (req, res) => {
   try {
@@ -176,5 +172,24 @@ async function obtenerSumaTotalMes(req, res) {
     }
 }
 
+// Ruta para obtener la suma de todos los total_mes por fecha
+router.get('/suma-total-mes/:fechaInicio/:fechaFin', obtenerSumaTotalMesPorFecha);
+async function obtenerSumaTotalMesPorFecha(req, res) {
+    try {
+        const fechaInicio = req.params.fechaInicio;
+        const fechaFin = req.params.fechaFin;
+        const suma = await ingresosService.getSumaTotalMesIngresosPorMes(fechaInicio, fechaFin);
+
+        const response = {
+          message: 'Suma obtenida con éxito',
+          suma_total_mes: suma
+        };
+
+        res.status(200).json(response);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al obtener la suma total de los meses' });
+    }
+}
 
 module.exports = router;
