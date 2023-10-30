@@ -245,6 +245,7 @@ async function getSumaTotalMesGastos() {
     }
 }
 
+
 async function getSumaTotalMesGastosPorFecha(fechaInicio, fechaFin) {	
     const client = await pool.connect();
   
@@ -264,6 +265,7 @@ async function getSumaTotalMesGastosPorFecha(fechaInicio, fechaFin) {
         client.release();
     }
   }
+
 
 module.exports = {
     procesarArchivoExcel,
