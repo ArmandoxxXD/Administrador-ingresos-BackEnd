@@ -245,7 +245,6 @@ async function getSumaTotalMesGastos() {
     }
 }
 
-
 async function getSumaTotalMesGastosPorFecha(fechaInicio, fechaFin) {	
     const client = await pool.connect();
   
