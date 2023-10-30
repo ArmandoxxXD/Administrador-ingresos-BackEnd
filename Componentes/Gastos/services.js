@@ -57,11 +57,19 @@ async function procesarArchivoExcel(filePath) {
     }
 }
 
+function getLastDayOfMonth(yyyyMM) {
+    const [year, month] = yyyyMM.split('-');
+    const date = new Date(year, month, 0); // El día 0 del mes siguiente es el último día del mes actual
+    return `${year}-${month}-${date.getDate()}`; // Retorna YYYY-MM-DD
+}
+
 async function insertarDatos({ reporteDiario, reporteMensual, fechaReporte }) {
     const client = await pool.connect();
 
     try {
         await client.query('BEGIN');
+
+        const fechaReporteFormatoCompleto = getLastDayOfMonth(fechaReporte);
 
         // 1. Insertar en la tabla 'ingreso'
         const insertIngresoQuery = `
@@ -69,7 +77,7 @@ async function insertarDatos({ reporteDiario, reporteMensual, fechaReporte }) {
           VALUES ($1, $2)
           RETURNING id;
       `;
-        const ingresoValues = [fechaReporte, JSON.stringify(reporteMensual)];
+        const ingresoValues = [fechaReporteFormatoCompleto, JSON.stringify(reporteMensual)];
         const result = await client.query(insertIngresoQuery, ingresoValues);
         const ingresoId = result.rows[0].id;
 
