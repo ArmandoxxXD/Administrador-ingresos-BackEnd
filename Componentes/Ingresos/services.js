@@ -213,7 +213,10 @@ async function validarFecha(fecha) {
           ) AS fecha_existe;
       `;
 
-      const valores = [new Date(fecha).getFullYear(), new Date(fecha).getMonth() + 1]; // +1 porque getMonth() devuelve un índice 0-based.
+      // Dividimos el string de fecha por el guion para obtener el año y el mes directamente
+      const [year, month] = fecha.split('-');
+
+      const valores = [parseInt(year, 10), parseInt(month, 10)];
 
       const result = await client.query(query, valores);
 
