@@ -203,22 +203,25 @@ async function obtenerReporteDiarioPorId(id) {
 
 async function validarFecha(fecha) {
     const client = await pool.connect();
-
+  
     try {
         const query = `
-          SELECT EXISTS (
-              SELECT 1 
-              FROM gasto 
-              WHERE EXTRACT(YEAR FROM fecha) = $1 AND EXTRACT(MONTH FROM fecha) = $2
-          ) AS fecha_existe;
-      `;
-
-        const valores = [new Date(fecha).getFullYear(), new Date(fecha).getMonth() + 1]; // +1 porque getMonth() devuelve un índice 0-based.
-
+            SELECT EXISTS (
+                SELECT 1 
+                FROM gasto 
+                WHERE EXTRACT(YEAR FROM fecha) = $1 AND EXTRACT(MONTH FROM fecha) = $2
+            ) AS fecha_existe;
+        `;
+  
+        // Dividimos el string de fecha por el guion para obtener el año y el mes directamente
+        const [year, month] = fecha.split('-');
+  
+        const valores = [parseInt(year, 10), parseInt(month, 10)];
+  
         const result = await client.query(query, valores);
-
+  
         return result.rows[0].fecha_existe;
-
+  
     } catch (error) {
         throw error;
     } finally {
@@ -244,7 +247,6 @@ async function getSumaTotalMesGastos() {
         client.release();
     }
 }
-
 
 async function getSumaTotalMesGastosPorFecha(fechaInicio, fechaFin) {	
     const client = await pool.connect();
