@@ -30,7 +30,7 @@ router.post('/cargar-registro', async (req, res) => {
       const { reporteDiario, reporteMensual, fechaReporte  } = req.body;
       await ingresosService.insertarDatos({ reporteDiario, reporteMensual, fechaReporte  });
 
-      res.status(200).json({ message: 'Información almacenada con éxito.' });
+      res.status(200).json({ message: 'Almaceno Información con Exito.' });
   } catch (error) {
       console.error(error);
       res.status(500).json({ error: 'Error al almacenar la información.' });
@@ -80,7 +80,7 @@ async function eliminarReportePorId(req, res) {
       const data = await ingresosService.eliminarReportePorId(id);
 
       const response = {
-        message: 'Registro de Ingreso Eliminado',
+        message: 'Elimino Registros de Ingreso',
         data: data
       };
 
