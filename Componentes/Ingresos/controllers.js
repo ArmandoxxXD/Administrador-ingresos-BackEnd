@@ -30,7 +30,7 @@ router.post('/cargar-registro', async (req, res) => {
       const { reporteDiario, reporteMensual, fechaReporte  } = req.body;
       await ingresosService.insertarDatos({ reporteDiario, reporteMensual, fechaReporte  });
 
-      res.status(200).json({ message: 'Almaceno Información con Exito.' });
+      res.status(200).json({ message: 'almaceno información con exito' });
   } catch (error) {
       console.error(error);
       res.status(500).json({ error: 'Error al almacenar la información.' });
