@@ -29,3 +29,10 @@ CREATE TABLE sub_gasto (
     fecha DATE NOT NULL,
     total NUMERIC(15,2) NOT NULL
 );
+
+CREATE TABLE activity_log (
+    id SERIAL PRIMARY KEY,
+    responsable VARCHAR(250),
+    actividad VARCHAR(250),
+    fecha DATE NOT NULL
+);
