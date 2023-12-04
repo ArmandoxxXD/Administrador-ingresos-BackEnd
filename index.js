@@ -35,6 +35,10 @@ app.use('/ingresos', ingresosController);
 const gastosController = require('./Componentes/Gastos/controllers.js');
 app.use('/gastos', gastosController);
 
+// Importa el router desde controller.js de Ingresos
+const registroActividadController = require('./Componentes/RegistroActividad/controllers.js');
+app.use('/activityLog', registroActividadController);
+
 
 // Iniciar el servidor
 app.listen(port, () => {

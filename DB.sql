@@ -32,7 +32,8 @@ CREATE TABLE sub_gasto (
 
 CREATE TABLE activity_log (
     id SERIAL PRIMARY KEY,
-    responsable VARCHAR(250),
+    usuario_responsable VARCHAR(250),
+    gmail VARCHAR(250),
     actividad VARCHAR(250),
-    fecha DATE NOT NULL
+    fecha timestamptz DEFAULT now()
 );
